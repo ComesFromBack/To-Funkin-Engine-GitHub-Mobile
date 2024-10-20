@@ -20,6 +20,8 @@ import states.TitleState;
 import backend.WinAPI;
 import openfl.events.KeyboardEvent;
 import openfl.events.NativeProcessExitEvent;
+import mobile.backend.MobileScaleMode;
+import lime.system.System as LimeSystem;
 
 #if linux
 import lime.graphics.Image;
