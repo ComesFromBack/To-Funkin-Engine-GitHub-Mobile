@@ -160,7 +160,10 @@ class LuaUtils
 				{
 					var errorTitle = 'Mod name: ' + Mods.currentModDirectory;
 					var errorMsg = 'An error occurred: $e';
-					CoolUtil.showPopUp(errorMsg, errorTitle);
+					#if windows
+					lime.app.Application.current.window.alert(errorMsg, errorTitle);
+					#end
+					trace('$errorTitle - $errorMsg');
 				}
 			}
 		}
@@ -401,26 +404,10 @@ class LuaUtils
 		return 'linux';
 		#elseif mac
 		return 'mac';
-		#elseif hl
-		return 'hashlink';
-		#elseif (html5 || emscripten || nodejs || winjs || electron)
+		#elseif html5
 		return 'browser';
 		#elseif android
 		return 'android';
-		#elseif webos
-		return 'webos';
-		#elseif tvos
-		return 'tvos';
-		#elseif watchos
-		return 'watchos';
-		#elseif air
-		return 'air';
-		#elseif flash
-		return 'flash';
-		#elseif (ios || iphonesim)
-		return 'ios';
-		#elseif neko
-		return 'neko';
 		#elseif switch
 		return 'switch';
 		#else

@@ -73,7 +73,7 @@ class Tank extends BaseStage
 		// Default GFs
 		if(songName == 'stress') setDefaultGF('pico-speaker');
 		else setDefaultGF('gf-tankmen');
-		#if flxanimate
+		
 		if (isStoryMode && !seenCutscene)
 		{
 			switch (songName)
@@ -86,7 +86,6 @@ class Tank extends BaseStage
 					setStartCallback(stressIntro);
 			}
 		}
-		#end
 	}
 	override function createPost()
 	{
@@ -130,7 +129,7 @@ class Tank extends BaseStage
 			spr.dance();
 		});
 	}
-	#if flxanimate
+
 	// Cutscenes
 	var cutsceneHandler:CutsceneHandler;
 	var tankman:FlxAnimate;
@@ -216,6 +215,7 @@ class Tank extends BaseStage
 		{
 			wellWellWell.play(true);
 			audioPlaying = wellWellWell;
+			// PlayState.subtitle.text = "Tankman: Well well well,Whadda we got here?";
 		});
 
 		// Move camera to BF
@@ -223,6 +223,7 @@ class Tank extends BaseStage
 		{
 			camFollow.x += 750;
 			camFollow.y += 100;
+			// PlayState.subtitle.text = "";
 		});
 
 		// Beep!
@@ -231,7 +232,12 @@ class Tank extends BaseStage
 			boyfriend.playAnim('singUP', true);
 			boyfriend.specialAnim = true;
 			FlxG.sound.play(Paths.sound('bfBeep'));
+			// PlayState.subtitle.text = "Boyfriend: Beep!";
+			// PlayState.subtitle.color = 0xFF00EEFF;
 		});
+
+		// Clear SubTitle
+		// cutsceneHandler.timer(5.25, function() { PlayState.subtitle.text = ""; });
 
 		// Move camera to Tankman
 		cutsceneHandler.timer(6, function()
@@ -243,10 +249,17 @@ class Tank extends BaseStage
 			tankman.anim.play('killYou', true);
 			killYou.play(true);
 			audioPlaying = killYou;
+			// PlayState.subtitle.text = "Tankman: We should just kill you but...";
+			// PlayState.subtitle.color = 0xFFFFFFFF;
 		});
+
+		// cutsceneHandler.timer(7.75, function(){ PlayState.subtitle.text = "Tankman: What the hell, it's been a boring day..."; });
+		// cutsceneHandler.timer(10, function(){ PlayState.subtitle.text = "Tankman: Let's see what you've got!"; });
+		// cutsceneHandler.timer(11.75, function(){ PlayState.subtitle.text = ""; });
 	}
 	function gunsIntro()
 	{
+		// TODO: Finish the subtitles
 		prepareCutscene();
 		cutsceneHandler.endTime = 11.5;
 		cutsceneHandler.music = 'DISTORTO';
@@ -261,6 +274,7 @@ class Tank extends BaseStage
 
 		cutsceneHandler.onStart = function()
 		{
+			// PlayState.subtitle.text = ""; // Clear subtitle
 			tightBars.play(true);
 			audioPlaying = tightBars;
 			FlxTween.tween(FlxG.camera, {zoom: defaultCamZoom * 1.2}, 4, {ease: FlxEase.quadInOut});
@@ -268,14 +282,18 @@ class Tank extends BaseStage
 			FlxTween.tween(FlxG.camera, {zoom: defaultCamZoom * 1.2}, 1, {ease: FlxEase.quadInOut, startDelay: 4.5});
 		};
 
+		// cutsceneHandler.timer(0.2, function() { PlayState.subtitle.text = "Tankman: Ha, pretty tight bars for a little dude who's simping over an..."; });
+
 		cutsceneHandler.timer(4, function()
 		{
+			// PlayState.subtitle.text = "Tankman: ugly, boring little teenager that wears her mom's clothes, ha! Hehehehe...";
 			gf.playAnim('sad', true);
 			gf.animation.finishCallback = function(name:String)
 			{
 				gf.playAnim('sad', true);
 			};
 		});
+		// cutsceneHandler.timer(10, function() { PlayState.subtitle.text = ""; } ); // Clear again, but why no effect?
 	}
 	var dualWieldAnimPlayed = 0;
 	function stressIntro()
@@ -305,33 +323,6 @@ class Tank extends BaseStage
 		addBehindGF(pico);
 		cutsceneHandler.push(pico);
 
-		// prepare pico animation cycle
-		function picoStressCycle() {
-			switch (pico.anim.curInstance.symbol.name) {
-				case "dieBitch", "GF Time to Die sequence":
-					pico.anim.play('picoAppears', true);
-					boyfriendGroup.alpha = 1;
-					boyfriendCutscene.visible = false;
-					boyfriend.playAnim('bfCatch', true);
-					boyfriend.animation.finishCallback = function(name:String)
-					{
-						if(name != 'idle')
-						{
-							boyfriend.playAnim('idle', true);
-							boyfriend.animation.curAnim.finish(); //Instantly goes to last frame
-						}
-					};
-				case "picoAppears", "Pico Saves them sequence":
-					pico.anim.play('picoEnd', true);
-				case "picoEnd", "Pico Dual Wield on Speaker idle":
-					gfGroup.alpha = 1;
-					pico.visible = false;
-					if (pico.anim.onComplete.has(picoStressCycle)) // for safety
-						pico.anim.onComplete.remove(picoStressCycle);
-			}
-		}
-		pico.anim.onComplete.add(picoStressCycle);
-
 		boyfriendCutscene = new FlxSprite(boyfriend.x + 5, boyfriend.y + 20);
 		boyfriendCutscene.antialiasing = ClientPrefs.data.antialiasing;
 		boyfriendCutscene.frames = Paths.getSparrowAtlas('characters/BOYFRIEND');
@@ -359,6 +350,33 @@ class Tank extends BaseStage
 			FlxTween.tween(camFollow, {x: 650, y: 300}, 1, {ease: FlxEase.sineOut});
 			FlxTween.tween(FlxG.camera, {zoom: 0.9 * 1.2 * 1.2}, 2.25, {ease: FlxEase.quadInOut});
 			pico.anim.play('dieBitch', true);
+			pico.anim.onComplete = function()
+			{
+				pico.anim.play('picoAppears', true);
+				pico.anim.onComplete = function()
+				{
+					pico.anim.play('picoEnd', true);
+					pico.anim.onComplete = function()
+					{
+						gfGroup.alpha = 1;
+						pico.visible = false;
+						pico.anim.onComplete = null;
+					}
+				};
+
+				boyfriendGroup.alpha = 1;
+				boyfriendCutscene.visible = false;
+				boyfriend.playAnim('bfCatch', true);
+
+				boyfriend.animation.finishCallback = function(name:String)
+				{
+					if(name != 'idle')
+					{
+						boyfriend.playAnim('idle', true);
+						boyfriend.animation.curAnim.finish(); //Instantly goes to last frame
+					}
+				};
+			};
 		});
 
 		cutsceneHandler.timer(17.5, function()
@@ -399,7 +417,6 @@ class Tank extends BaseStage
 			zoomBack();
 		});
 	}
-	#end
 
 	function zoomBack()
 	{

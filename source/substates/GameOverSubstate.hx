@@ -9,7 +9,6 @@ import flixel.math.FlxPoint;
 
 import states.StoryMenuState;
 import states.FreeplayState;
-import lime.ui.Haptic;
 
 class GameOverSubstate extends MusicBeatSubstate
 {
@@ -60,9 +59,6 @@ class GameOverSubstate extends MusicBeatSubstate
 	{
 		instance = this;
 
-		if (ClientPrefs.data.gameOverVibration)
-			Haptic.vibrate(0, 500);
-
 		Conductor.songPosition = 0;
 
 		if(boyfriend == null)
@@ -82,13 +78,13 @@ class GameOverSubstate extends MusicBeatSubstate
 
 		camFollow = new FlxObject(0, 0, 1, 1);
 		camFollow.setPosition(boyfriend.getGraphicMidpoint().x + boyfriend.cameraPosition[0], boyfriend.getGraphicMidpoint().y + boyfriend.cameraPosition[1]);
-		FlxG.camera.focusOn(FlxPoint.weak(FlxG.camera.scroll.x + (FlxG.camera.width / 2), FlxG.camera.scroll.y + (FlxG.camera.height / 2)));
+		FlxG.camera.focusOn(new FlxPoint(FlxG.camera.scroll.x + (FlxG.camera.width / 2), FlxG.camera.scroll.y + (FlxG.camera.height / 2)));
 		FlxG.camera.follow(camFollow, LOCKON, 0.01);
 		add(camFollow);
 		
 		PlayState.instance.setOnScripts('inGameOver', true);
 		PlayState.instance.callOnScripts('onGameOverStart', []);
-		FlxG.sound.music.loadEmbedded(Paths.music(loopSoundName), true);
+		Paths.music(loopSoundName);
 
 		if(characterName == 'pico-dead')
 		{
@@ -132,9 +128,6 @@ class GameOverSubstate extends MusicBeatSubstate
 				neneKnife.animation.play('anim', true);
 			}
 		}
-
-		addTouchPad('NONE', 'A_B');
-		addTouchPadCamera();
 
 		super.create();
 	}
@@ -194,17 +187,16 @@ class GameOverSubstate extends MusicBeatSubstate
 						FlxG.sound.play(Paths.sound('jeffGameover/jeffGameover-' + FlxG.random.int(1, 25, exclude)), 1, false, null, true, function() {
 							if(!isEnding)
 							{
-								FlxG.sound.music.fadeIn(0.2, 1, 4);
+								FlxG.sound.music.fadeIn(0.2, ClientPrefs.data.musicVolume, 4);
 							}
 						});
 
 					default:
-						coolStartDeath();
+						coolStartDeath(ClientPrefs.data.musicVolume);
 				}
 			}
 			
-			if (FlxG.sound.music.playing)
-			{
+			if (FlxG.sound.music.playing) {
 				Conductor.songPosition = FlxG.sound.music.time;
 			}
 		}
@@ -212,10 +204,8 @@ class GameOverSubstate extends MusicBeatSubstate
 	}
 
 	var isEnding:Bool = false;
-	function coolStartDeath(?volume:Float = 1):Void
-	{
-		FlxG.sound.music.play(true);
-		FlxG.sound.music.volume = volume;
+	function coolStartDeath(?volume:Float = 1):Void {
+		FlxG.sound.playMusic(Paths.music(loopSoundName), volume);
 	}
 
 	function endBullshit():Void

@@ -15,7 +15,7 @@ class PauseSubState extends MusicBeatSubstate
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
 	var menuItems:Array<String> = [];
-	var menuItemsOG:Array<String> = ['Resume', 'Restart Song', 'Chart Editor', 'Change Difficulty', 'Options', 'Exit to menu'];
+	var menuItemsOG:Array<String> = ['Resume', 'Restart Song', 'Change Difficulty', 'Options', 'Exit to menu'];
 	var difficultyChoices = [];
 	var curSelected:Int = 0;
 
@@ -88,13 +88,19 @@ class PauseSubState extends MusicBeatSubstate
 		levelDifficulty.updateHitbox();
 		add(levelDifficulty);
 
-		var blueballedTxt:FlxText = new FlxText(20, 15 + 64, 0, Language.getPhrase("blueballed", "Blueballed: {1}", [PlayState.deathCounter]), 32);
+		var blueballedTxt:FlxText = new FlxText(20, 15 + 64, 0, Language.getTextFromID("Deaths", "REP", [PlayState.deathCounter]), 32);
 		blueballedTxt.scrollFactor.set();
 		blueballedTxt.setFormat(Paths.font('vcr.ttf'), 32);
 		blueballedTxt.updateHitbox();
 		add(blueballedTxt);
 
-		practiceText = new FlxText(20, 15 + 101, 0, Language.getPhrase("Practice Mode").toUpperCase(), 32);
+		var modeTxt:FlxText = new FlxText(20, 15 + 96, 0, "PlayState mode: "+PlayState.modeOfPlayState, 32);
+		modeTxt.scrollFactor.set();
+		modeTxt.setFormat(Paths.font('vcr.ttf'), 32);
+		modeTxt.updateHitbox();
+		add(modeTxt);
+
+		practiceText = new FlxText(20, 15 + 101, 0, Language.getTextFromID("Pause_Practice").toUpperCase(), 32);
 		practiceText.scrollFactor.set();
 		practiceText.setFormat(Paths.font('vcr.ttf'), 32);
 		practiceText.x = FlxG.width - (practiceText.width + 20);
@@ -102,7 +108,7 @@ class PauseSubState extends MusicBeatSubstate
 		practiceText.visible = PlayState.instance.practiceMode;
 		add(practiceText);
 
-		var chartingText:FlxText = new FlxText(20, 15 + 101, 0, Language.getPhrase("Charting Mode").toUpperCase(), 32);
+		var chartingText:FlxText = new FlxText(20, 15 + 101, 0, Language.getTextFromID("Pause_Charting").toUpperCase(), 32);
 		chartingText.scrollFactor.set();
 		chartingText.setFormat(Paths.font('vcr.ttf'), 32);
 		chartingText.x = FlxG.width - (chartingText.width + 20);
@@ -111,18 +117,18 @@ class PauseSubState extends MusicBeatSubstate
 		chartingText.visible = PlayState.chartingMode;
 		add(chartingText);
 
-		blueballedTxt.alpha = 0;
-		levelDifficulty.alpha = 0;
-		levelInfo.alpha = 0;
+		blueballedTxt.alpha = modeTxt.alpha = levelDifficulty.alpha = levelInfo.alpha = 0;
 
 		levelInfo.x = FlxG.width - (levelInfo.width + 20);
 		levelDifficulty.x = FlxG.width - (levelDifficulty.width + 20);
 		blueballedTxt.x = FlxG.width - (blueballedTxt.width + 20);
+		modeTxt.x = FlxG.width - (modeTxt.width + 20);
 
 		FlxTween.tween(bg, {alpha: 0.6}, 0.4, {ease: FlxEase.quartInOut});
 		FlxTween.tween(levelInfo, {alpha: 1, y: 20}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.3});
 		FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.5});
 		FlxTween.tween(blueballedTxt, {alpha: 1, y: blueballedTxt.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.7});
+		FlxTween.tween(modeTxt, {alpha: 1, y: modeTxt.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.9});
 
 		grpMenuShit = new FlxTypedGroup<Alphabet>();
 		add(grpMenuShit);
@@ -143,16 +149,13 @@ class PauseSubState extends MusicBeatSubstate
 		regenMenu();
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
-		addTouchPad(PlayState.chartingMode ? 'LEFT_FULL' : 'UP_DOWN', 'A');
-		addTouchPadCamera();
-
 		super.create();
 	}
 	
 	function getPauseSong()
 	{
 		var formattedSongName:String = (songName != null ? Paths.formatToSongPath(songName) : '');
-		var formattedPauseMusic:String = Paths.formatToSongPath(ClientPrefs.data.pauseMusic);
+		var formattedPauseMusic:String = Paths.formatToSongPath(Arrays.pauseSongList[ClientPrefs.data.pauseMusic]);
 		if(formattedSongName == 'none' || (formattedSongName != 'none' && formattedPauseMusic == 'none')) return null;
 
 		return (formattedSongName != '') ? formattedSongName : formattedPauseMusic;
@@ -198,13 +201,13 @@ class PauseSubState extends MusicBeatSubstate
 			case 'Skip Time':
 				if (controls.UI_LEFT_P)
 				{
-					FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+					FlxG.sound.play(Arrays.getThemeSound('scrollMenu'), ClientPrefs.data.soundVolume);
 					curTime -= 1000;
 					holdTime = 0;
 				}
 				if (controls.UI_RIGHT_P)
 				{
-					FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+					FlxG.sound.play(Arrays.getThemeSound('scrollMenu'), ClientPrefs.data.soundVolume);
 					curTime += 1000;
 					holdTime = 0;
 				}
@@ -254,7 +257,7 @@ class PauseSubState extends MusicBeatSubstate
 					missingText.screenCenter(Y);
 					missingText.visible = true;
 					missingTextBG.visible = true;
-					FlxG.sound.play(Paths.sound('cancelMenu'));
+					FlxG.sound.play(Arrays.getThemeSound('cancelMenu'), ClientPrefs.data.soundVolume);
 
 					super.update(elapsed);
 					return;
@@ -268,7 +271,6 @@ class PauseSubState extends MusicBeatSubstate
 			switch (daSelected)
 			{
 				case "Resume":
-					Paths.clearUnusedMemory();
 					close();
 				case 'Change Difficulty':
 					menuItems = difficultyChoices;
@@ -280,8 +282,6 @@ class PauseSubState extends MusicBeatSubstate
 					practiceText.visible = PlayState.instance.practiceMode;
 				case "Restart Song":
 					restartSong();
-				case 'Chart Editor':
-					PlayState.instance.openChartEditor();
 				case "Leave Charting Mode":
 					restartSong();
 					PlayState.chartingMode = false;
@@ -315,14 +315,25 @@ class PauseSubState extends MusicBeatSubstate
 					PlayState.instance.paused = true; // For lua
 					PlayState.instance.vocals.volume = 0;
 					PlayState.instance.canResync = false;
-					MusicBeatState.switchState(new OptionsState());
-					if(ClientPrefs.data.pauseMusic != 'None')
-					{
-						FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(ClientPrefs.data.pauseMusic)), pauseMusic.volume);
+					switch(Arrays.engineList[ClientPrefs.data.styleEngine]) {
+						case "Psych Old" | "Psych New":
+							MusicBeatState.switchState(new options.OptionsState());
+							OptionsState.onPlayState = true;
+						case "Kade":
+							MusicBeatState.switchState(new options.kade.KadeOptions());
+							options.kade.KadeOptions.onPlayState = true;
+						case "MicUp":
+							MusicBeatState.switchState(new options.micup.SettingsState());
+							options.micup.SettingsState.onPlayState = true;
+						case "Vanilla":
+							MusicBeatState.switchState(new options.vanilla.VanillaSettingState());
+							options.vanilla.VanillaSettingState.onPlayState = true;
+					}
+					if(Arrays.pauseSongList[ClientPrefs.data.pauseMusic] != 'None') {
+						FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(Arrays.pauseSongList[ClientPrefs.data.pauseMusic])), pauseMusic.volume);
 						FlxTween.tween(FlxG.sound.music, {volume: 1}, 0.8);
 						FlxG.sound.music.time = pauseMusic.time;
 					}
-					OptionsState.onPlayState = true;
 				case "Exit to menu":
 					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 					PlayState.deathCounter = 0;
@@ -330,22 +341,26 @@ class PauseSubState extends MusicBeatSubstate
 
 					PlayState.instance.canResync = false;
 					Mods.loadTopMod();
-					if(PlayState.isStoryMode)
-						MusicBeatState.switchState(new StoryMenuState());
-					else 
-						MusicBeatState.switchState(new FreeplayState());
+					switch(PlayState.modeOfPlayState) {
+						case "Story Mode":
+							if(Arrays.engineList[ClientPrefs.data.styleEngine] == "MicUp")
+								MusicBeatState.switchState(new states.mic.StoryMenu());
+							else
+								MusicBeatState.switchState(new StoryMenuState());
+						case "Free Play":
+							if(Arrays.engineList[ClientPrefs.data.styleEngine] == "MicUp")
+								MusicBeatState.switchState(new states.mic.MenuFreeplay());
+							else
+								MusicBeatState.switchState(new FreeplayState());
+						case "Marathon":
+							MusicBeatState.switchState(new states.mic.MenuMarathon());
+					}
 
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					PlayState.changedDifficulty = false;
 					PlayState.chartingMode = false;
 					FlxG.camera.followLerp = 0;
 			}
-		}
-
-		if (touchPad == null) //sometimes it dosent add the tpad, hopefully this fixes it
-		{
-			addTouchPad(PlayState.chartingMode ? 'LEFT_FULL' : 'UP_DOWN', 'A');
-			addTouchPadCamera();
 		}
 	}
 
@@ -400,7 +415,7 @@ class PauseSubState extends MusicBeatSubstate
 		}
 		missingText.visible = false;
 		missingTextBG.visible = false;
-		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+		FlxG.sound.play(Arrays.getThemeSound('scrollMenu'), ClientPrefs.data.soundVolume);
 	}
 
 	function regenMenu():Void {
@@ -413,7 +428,7 @@ class PauseSubState extends MusicBeatSubstate
 		}
 
 		for (num => str in menuItems) {
-			var item = new Alphabet(90, 320, Language.getPhrase('pause_$str', str), true);
+			var item = new Alphabet(90, 320, Language.getTextFromID('Pause_$str'), true);
 			item.isMenuItem = true;
 			item.targetY = num;
 			grpMenuShit.add(item);

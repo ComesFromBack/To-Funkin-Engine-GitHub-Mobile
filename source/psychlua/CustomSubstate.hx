@@ -10,9 +10,10 @@ class CustomSubstate extends MusicBeatSubstate
 	#if LUA_ALLOWED
 	public static function implement(funk:FunkinLua)
 	{
-		funk.set("openCustomSubstate", openCustomSubstate);
-		funk.set("closeCustomSubstate", closeCustomSubstate);
-		funk.set("insertToCustomSubstate", insertToCustomSubstate);
+		var lua = funk.lua;
+		Lua_helper.add_callback(lua, "openCustomSubstate", openCustomSubstate);
+		Lua_helper.add_callback(lua, "closeCustomSubstate", closeCustomSubstate);
+		Lua_helper.add_callback(lua, "insertToCustomSubstate", insertToCustomSubstate);
 	}
 	#end
 	
@@ -47,22 +48,6 @@ class CustomSubstate extends MusicBeatSubstate
 		if(instance != null)
 		{
 			var tagObject:FlxObject = cast (MusicBeatState.getVariables().get(tag), FlxObject);
-
-			if(tagObject != null)
-			{
-				if(pos < 0) instance.add(tagObject);
-				else instance.insert(pos, tagObject);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static function insertLuaTpad(?pos:Int = -1)
-	{
-		if(instance != null)
-		{
-			var tagObject:FlxObject = PlayState.instance.luaTouchPad;
 
 			if(tagObject != null)
 			{

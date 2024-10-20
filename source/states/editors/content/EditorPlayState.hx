@@ -89,7 +89,7 @@ class EditorPlayState extends MusicBeatSubstate
 
 		cachePopUpScore();
 		guitarHeroSustains = ClientPrefs.data.guitarHeroSustains;
-		if(ClientPrefs.data.hitsoundVolume > 0) Paths.sound('hitsound');
+		if(ClientPrefs.data.hitSoundVolume > 0) Paths.sound('hitsound');
 
 		/* setting up Editor PlayState stuff */
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
@@ -131,7 +131,7 @@ class EditorPlayState extends MusicBeatSubstate
 		dataTxt.borderSize = 1.25;
 		add(dataTxt);
 
-		var tipText:FlxText = new FlxText(10, FlxG.height - 24, 0, 'Press ${controls.mobileC ? #if android 'BACK' #else 'X' #end : 'ESC'} to Go Back to Chart Editor', 16);
+		var tipText:FlxText = new FlxText(10, FlxG.height - 24, 0, 'Press ESC to Go Back to Chart Editor', 16);
 		tipText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		tipText.borderSize = 2;
 		tipText.scrollFactor.set();
@@ -151,14 +151,6 @@ class EditorPlayState extends MusicBeatSubstate
 		updateScore();
 		cachePopUpScore();
 
-		#if !android
-		addTouchPad('NONE', 'P');
-		addTouchPadCamera();
-		#end
-
-		addMobileControls();
-		mobileControls.instance.visible = true;
-
 		super.create();
 
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
@@ -166,7 +158,7 @@ class EditorPlayState extends MusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
-		if(#if android FlxG.android.justReleased.BACK #else touchPad.buttonP.justPressed #end || controls.BACK || FlxG.keys.justPressed.ESCAPE || FlxG.keys.justPressed.F12)
+		if(controls.BACK || FlxG.keys.justPressed.ESCAPE || FlxG.keys.justPressed.F12)
 		{
 			endSong();
 			super.update(elapsed);
@@ -496,9 +488,6 @@ class EditorPlayState extends MusicBeatSubstate
 			finishTimer.destroy();
 
 		Conductor.songPosition = FlxG.sound.music.time = vocals.time = opponentVocals.time = startPos - Conductor.offset;
-
-		mobileControls.instance.visible = false;
-
 		close();
 	}
 	
@@ -884,6 +873,7 @@ class EditorPlayState extends MusicBeatSubstate
 	}
 
 	public function invalidateNote(note:Note):Void {
+		note.kill();
 		notes.remove(note, true);
 		note.destroy();
 	}

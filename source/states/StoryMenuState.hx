@@ -20,6 +20,7 @@ class StoryMenuState extends MusicBeatState
 	public static var weekCompleted:Map<String, Bool> = new Map<String, Bool>();
 
 	var scoreText:FlxText;
+	var rankText:FlxText;
 
 	private static var lastDifficultyName:String = '';
 	var curDifficulty:Int = 1;
@@ -40,6 +41,7 @@ class StoryMenuState extends MusicBeatState
 	var sprDifficulty:FlxSprite;
 	var leftArrow:FlxSprite;
 	var rightArrow:FlxSprite;
+	var rakes:String = 'Null';
 
 	var loadedWeeks:Array<WeekData> = [];
 
@@ -57,14 +59,11 @@ class StoryMenuState extends MusicBeatState
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
-		final accept:String = controls.mobileC ? "A" : "ACCEPT";
-		final reject:String = controls.mobileC ? "B" : "BACK";
-
 		if(WeekData.weeksList.length < 1)
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
-			MusicBeatState.switchState(new states.ErrorState("NO WEEKS ADDED FOR STORY MODE\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject + " to return to Main Menu.",
+			MusicBeatState.switchState(new states.ErrorState("NO WEEKS ADDED FOR STORY MODE\n\nPress ACCEPT to go to the Week Editor Menu.\nPress BACK to return to Main Menu.",
 				function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
 				function() MusicBeatState.switchState(new states.MainMenuState())));
 			return;
@@ -72,12 +71,17 @@ class StoryMenuState extends MusicBeatState
 
 		if(curWeek >= WeekData.weeksList.length) curWeek = 0;
 
-		scoreText = new FlxText(10, 10, 0, Language.getPhrase('week_score', 'WEEK SCORE: {1}', [lerpScore]), 36);
-		scoreText.setFormat(Paths.font("vcr.ttf"), 32);
-
+		scoreText = new FlxText(10, 10, 0, Language.getTextFromID('Week_Score', 'REP', [lerpScore]), 36);
+		scoreText.setFormat(Language.fonts(), 32);
 		txtWeekTitle = new FlxText(FlxG.width * 0.7, 10, 0, "", 32);
 		txtWeekTitle.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
 		txtWeekTitle.alpha = 0.7;
+
+		rankText = new FlxText(0, 10);
+		rankText.text = 'RANK: GREAT(100.00%)';
+		rankText.setFormat(Language.fonts(), 32);
+		rankText.size = scoreText.size;
+		rankText.screenCenter(X);
 
 		var ui_tex = Paths.getSparrowAtlas('campaign_menu_UI_assets');
 		var bgYellow:FlxSprite = new FlxSprite(0, 56).makeGraphic(FlxG.width, 386, 0xFFF9CF51);
@@ -182,13 +186,12 @@ class StoryMenuState extends MusicBeatState
 		txtTracklist.font = Paths.font("vcr.ttf");
 		txtTracklist.color = 0xFFe55777;
 		add(txtTracklist);
+		add(rankText);
 		add(scoreText);
 		add(txtWeekTitle);
 
 		changeWeek();
 		changeDifficulty();
-
-		addTouchPad('LEFT_FULL', 'A_B_X_Y');
 
 		super.create();
 	}
@@ -197,8 +200,6 @@ class StoryMenuState extends MusicBeatState
 		persistentUpdate = true;
 		changeWeek();
 		super.closeSubState();
-		removeTouchPad();
-		addTouchPad('LEFT_FULL', 'A_B_X_Y');
 	}
 
 	override function update(elapsed:Float)
@@ -221,8 +222,30 @@ class StoryMenuState extends MusicBeatState
 			lerpScore = Math.floor(FlxMath.lerp(intendedScore, lerpScore, Math.exp(-elapsed * 30)));
 			if(Math.abs(intendedScore - lerpScore) < 10) lerpScore = intendedScore;
 	
-			scoreText.text = Language.getPhrase('week_score', 'WEEK SCORE: {1}', [lerpScore]);
+			scoreText.text = Language.getTextFromID('Week_Score', 'REP', [lerpScore]);
 		}
+
+		lerpAcc = Math.abs(FlxMath.roundDecimal(FlxMath.lerp(lerpAcc, intendedAcc, FlxMath.bound(elapsed * 30, 0, 1)), 4));
+		if(Math.abs(intendedScore - lerpScore) < 10) lerpScore = intendedScore;
+		if(intendedAcc == 1)
+			rakes = 'IMPOSSIBLE!!!';
+		else if(intendedAcc >= 0.9)
+			rakes = 'SICK RANK!!';
+		else if(intendedAcc >= 0.8)
+			rakes = 'GREAT!';
+		else if(intendedAcc >= 0.7)
+			rakes = 'GOOD';
+		else if(intendedAcc >= 0.6)
+			rakes = 'UH OK?';
+		else if(intendedAcc >= 0.4)
+			rakes = 'BAD RANK';
+		else if(intendedAcc >= 0.2)
+			rakes = 'SHIT';
+		else if(intendedAcc >= 0.0)
+			rakes = 'None';
+
+		var list:Array<Dynamic> = [rakes,lerpAcc*100];
+		rankText.text = '${Language.getTextFromID("Week_Rank", "REP", list)}';
 
 		// FlxG.watch.addQuick('font', scoreText.font);
 
@@ -267,17 +290,15 @@ class StoryMenuState extends MusicBeatState
 			else if (changeDiff)
 				changeDifficulty();
 
-			if(FlxG.keys.justPressed.CONTROL || touchPad.buttonX.justPressed)
+			if(FlxG.keys.justPressed.CONTROL)
 			{
 				persistentUpdate = false;
 				openSubState(new GameplayChangersSubstate());
-				removeTouchPad();
 			}
-			else if(controls.RESET || touchPad.buttonY.justPressed)
+			else if(controls.RESET)
 			{
 				persistentUpdate = false;
 				openSubState(new ResetScoreSubState('', curDifficulty, '', curWeek));
-				removeTouchPad();
 				//FlxG.sound.play(Paths.sound('scrollMenu'));
 			}
 			else if (controls.ACCEPT)
@@ -402,11 +423,14 @@ class StoryMenuState extends MusicBeatState
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
+		intendedAcc = Highscore.getWeekAcc(loadedWeeks[curWeek].fileName, curDifficulty);
 		#end
 	}
 
 	var lerpScore:Int = 49324858;
 	var intendedScore:Int = 0;
+	var lerpAcc:Float = 1.00;
+	var intendedAcc:Float = 0.00;
 
 	function changeWeek(change:Int = 0):Void
 	{
@@ -420,7 +444,7 @@ class StoryMenuState extends MusicBeatState
 		var leWeek:WeekData = loadedWeeks[curWeek];
 		WeekData.setDirectoryFromWeek(leWeek);
 
-		var leName:String = Language.getPhrase('storyname_${leWeek.fileName}', leWeek.storyName);
+		var leName:String = leWeek.fileName;
 		txtWeekTitle.text = leName.toUpperCase();
 		txtWeekTitle.x = FlxG.width - (txtWeekTitle.width + 10);
 
@@ -489,6 +513,7 @@ class StoryMenuState extends MusicBeatState
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
+		intendedAcc = Highscore.getWeekAcc(loadedWeeks[curWeek].fileName, curDifficulty);
 		#end
 	}
 }
