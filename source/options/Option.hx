@@ -45,8 +45,8 @@ class Option
 	{
 		_name = name;
 		_translationKey = translation != null ? translation : _name;
-		this.name = Language.getPhrase('setting_$_translationKey', name);
-		this.description = Language.getPhrase('description_$_translationKey', description);
+		this.name = name;
+		this.description = description;
 		this.variable = variable;
 		this.type = type;
 		this.options = options;
@@ -67,10 +67,8 @@ class Option
 				scrollSpeed = 0.5;
 				decimals = 2;
 			case STRING:
-				if(options.length > 0)
-					defaultValue = options[0];
-				if(defaultValue == null)
-					defaultValue = '';
+				if(defaultValue == null || options.length > 0)
+					defaultValue = 0;
 
 			case KEYBIND:
 				defaultValue = '';
@@ -86,7 +84,7 @@ class Option
 			switch(type)
 			{
 				case STRING:
-					var num:Int = options.indexOf(getValue());
+					var num:Int = getValue();
 					if(num > -1) curOption = num;
 
 				default:
@@ -132,7 +130,10 @@ class Option
 		if(child != null)
 		{
 			_text = newValue;
-			child.text = Language.getPhrase('setting_$_translationKey-${getValue()}', _text);
+			if(type == STRING)
+				child.text = options[getValue()];
+			else
+				child.text = getValue();
 			return _text;
 		}
 		return null;

@@ -84,8 +84,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 	public function new()
 	{
-		controls.isInSubstate = true;
-
 		super();
 		
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
@@ -137,9 +135,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 			updateTextFrom(optionsArray[i]);
 		}
 
-		addTouchPad('LEFT_FULL', 'A_B_C');
-		addTouchPadCamera();
-
 		changeSelection();
 		reloadCheckboxes();
 	}
@@ -159,7 +154,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		{
 			close();
 			ClientPrefs.saveSettings();
-			controls.isInSubstate = false;
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 		}
 
@@ -220,7 +214,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 										num = 0;
 
 									curOption.curOption = num;
-									curOption.setValue(curOption.options[num]); //lol
+									curOption.setValue(num); //lol
 									
 									if (curOption.name == "Scroll Type")
 									{
@@ -276,7 +270,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 					clearHold();
 			}
 
-			if(controls.RESET || touchPad.buttonC.justPressed)
+			if(controls.RESET)
 			{
 				for (i in 0...optionsArray.length)
 				{
@@ -285,7 +279,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 					if(leOption.type != BOOL)
 					{
 						if(leOption.type == STRING)
-							leOption.curOption = leOption.options.indexOf(leOption.getValue());
+							leOption.curOption = leOption.getValue();
 
 						updateTextFrom(leOption);
 					}
@@ -308,11 +302,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 		if(nextAccept > 0) {
 			nextAccept -= 1;
-		}
-
-		if (touchPad == null) { //sometimes it dosent add the tpad, hopefully this fixes it
-			addTouchPad('LEFT_FULL', 'A_B_C');
-			addTouchPadCamera();
 		}
 		super.update(elapsed);
 	}
@@ -385,7 +374,7 @@ class GameplayOption
 	public function new(name:String, variable:String, type:OptionType, defaultValue:Dynamic = 'null variable value', ?options:Array<String> = null)
 	{
 		_name = name;
-		this.name = Language.getPhrase('setting_$name', name);
+		this.name = Language.getTextFromID('Setting_$variable');
 		this.variable = variable;
 		this.type = type;
 		this.defaultValue = defaultValue;
@@ -402,9 +391,7 @@ class GameplayOption
 				case PERCENT:
 					defaultValue = 1;
 				case STRING:
-					defaultValue = '';
-					if(options.length > 0)
-						defaultValue = options[0];
+					defaultValue = 0;
 
 				default:
 			}
@@ -416,7 +403,7 @@ class GameplayOption
 		switch(type)
 		{
 			case STRING:
-				var num:Int = options.indexOf(getValue());
+				var num:Int = getValue();
 				if(num > -1)
 					curOption = num;
 
@@ -458,7 +445,7 @@ class GameplayOption
 		if(child != null)
 		{
 			_text = newValue;
-			child.text = Language.getPhrase('setting_$_name-$_text', _text);
+			child.text = _text;
 			return _text;
 		}
 		return null;

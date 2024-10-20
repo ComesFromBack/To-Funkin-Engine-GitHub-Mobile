@@ -4,9 +4,6 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 {
 	public function new()
 	{
-		title = Language.getPhrase('gameplay_menu', 'Gameplay Settings');
-		rpcTitle = 'Gameplay Settings Menu'; //for Discord Rich Presence
-
 		//I'd suggest using "Downscroll" as an example for making your own option since it is the simplest here
 		var option:Option = new Option('Downscroll', //Name
 			'If checked, notes go Down instead of Up, simple enough.', //Description
@@ -39,10 +36,11 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = onChangeAutoPause;
 
-		var option:Option = new Option('Pop Up Score',
-			"If unchecked, hitting notes won't make \"sick\", \"good\".. and combo popups\n(Useful for low end " + Main.platform + ").",
-			'popUpRating',
-			BOOL);
+		var option:Option = new Option('Engine UI', //Name
+			'idk.', //Description
+			'styleEngine', //Save data variable name
+			STRING,
+			Arrays.engineList); //Variable type
 		addOption(option);
 
 		var option:Option = new Option('Disable Reset Button',
@@ -51,16 +49,9 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Game Over Vibration',
-			"If checked, your device will vibrate at game over.",
-			'gameOverVibration',
-			BOOL);
-		addOption(option);
-		option.onChange = onChangeVibration;
-
 		var option:Option = new Option('Hitsound Volume',
 			'Funny notes does \"Tick!\" when you hit them.',
-			'hitsoundVolume',
+			'hitSoundVolume',
 			PERCENT);
 		addOption(option);
 		option.scrollSpeed = 1.6;
@@ -130,14 +121,8 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 	}
 
 	function onChangeHitsoundVolume()
-		FlxG.sound.play(Paths.sound('hitsound'), ClientPrefs.data.hitsoundVolume);
+		FlxG.sound.play(Paths.sound('hitsound'), ClientPrefs.data.hitSoundVolume);
 
 	function onChangeAutoPause()
 		FlxG.autoPause = ClientPrefs.data.autoPause;
-
-	function onChangeVibration()
-	{
-		if(ClientPrefs.data.gameOverVibration)
-			lime.ui.Haptic.vibrate(0, 500);
-	}
 }

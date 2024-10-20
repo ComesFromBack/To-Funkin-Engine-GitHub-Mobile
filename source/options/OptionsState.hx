@@ -2,10 +2,6 @@ package options;
 
 import states.MainMenuState;
 import backend.StageData;
-#if (target.threaded)
-import sys.thread.Thread;
-import sys.thread.Mutex;
-#end
 
 class OptionsState extends MusicBeatState
 {
@@ -17,31 +13,19 @@ class OptionsState extends MusicBeatState
 		'Visuals',
 		'Gameplay'
 		#if TRANSLATIONS_ALLOWED , 'Language' #end
-		,'Mobile Options'
 	];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
-	#if (target.threaded) var mutex:Mutex = new Mutex(); #end
 
 	function openSelectedSubstate(label:String) {
-		if (label != "Adjust Delay and Combo"){
-			removeTouchPad();
-			persistentUpdate = false;
-		}
 		switch(label)
 		{
 			case 'Note Colors':
 				openSubState(new options.NotesColorSubState());
 			case 'Controls':
-				if (controls.mobileC)
-				{
-					persistentUpdate = false;
-					openSubState(new mobile.substates.MobileControlSelectSubState());
-				}
-				else
-					openSubState(new options.ControlsSubState());
+				openSubState(new options.ControlsSubState());
 			case 'Graphics':
 				openSubState(new options.GraphicsSettingsSubState());
 			case 'Visuals':
@@ -50,12 +34,8 @@ class OptionsState extends MusicBeatState
 				openSubState(new options.GameplaySettingsSubState());
 			case 'Adjust Delay and Combo':
 				MusicBeatState.switchState(new options.NoteOffsetState());
-			case 'Mobile Options':
-				openSubState(new mobile.options.MobileOptionsSubState());
-			#if TRANSLATIONS_ALLOWED
 			case 'Language':
 				openSubState(new options.LanguageSubState());
-			#end
 		}
 	}
 
@@ -67,6 +47,18 @@ class OptionsState extends MusicBeatState
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Options Menu", null);
 		#end
+
+		if(Arrays.engineList[ClientPrefs.data.styleEngine] == "Psych Old") {
+			options = [
+				'Note_Colors',
+				'Controls',
+				'Adjust_Delay_and_Combo',
+				'Graphics',
+				'Visuals_Old',
+				'Gameplay'
+				#if TRANSLATIONS_ALLOWED , 'Language' #end
+			];
+		}
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
@@ -81,7 +73,7 @@ class OptionsState extends MusicBeatState
 
 		for (num => option in options)
 		{
-			var optionText:Alphabet = new Alphabet(0, 0, Language.getPhrase('options_$option', option), true);
+			var optionText:Alphabet = new Alphabet(0, 0, Language.getTextFromID('Options_$option'), true);
 			optionText.screenCenter();
 			optionText.y += (92 * (num - (options.length / 2))) + 45;
 			grpOptions.add(optionText);
@@ -95,22 +87,6 @@ class OptionsState extends MusicBeatState
 		changeSelection();
 		ClientPrefs.saveSettings();
 
-		addTouchPad('UP_DOWN', 'A_B');
-
-		#if (target.threaded)
-		Thread.create(()->{
-			mutex.acquire();
-
-			for (music in VisualsSettingsSubState.pauseMusics)
-			{
-				if (music.toLowerCase() != "none")
-					Paths.music(Paths.formatToSongPath(music));
-			}
-
-			mutex.release();
-		});
-		#end
-
 		super.create();
 	}
 
@@ -121,36 +97,28 @@ class OptionsState extends MusicBeatState
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Options Menu", null);
 		#end
-		controls.isInSubstate = false;
-        	removeTouchPad();
-		addTouchPad('UP_DOWN', 'A_B');
-		persistentUpdate = true;
 	}
 
-	var exiting = false;
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
-		if(!exiting) {
-			if (controls.UI_UP_P)
-				changeSelection(-1);
-			if (controls.UI_DOWN_P)
-				changeSelection(1);
+		if (controls.UI_UP_P)
+			changeSelection(-1);
+		if (controls.UI_DOWN_P)
+			changeSelection(1);
 
-			if (controls.BACK)
+		if (controls.BACK)
+		{
+			FlxG.sound.play(Paths.sound('cancelMenu'));
+			if(onPlayState)
 			{
-				exiting = true;
-				FlxG.sound.play(Paths.sound('cancelMenu'));
-				if(onPlayState)
-				{
-					StageData.loadDirectory(PlayState.SONG);
-					LoadingState.loadAndSwitchState(new PlayState());
-					FlxG.sound.music.volume = 0;
-				}
-				else MusicBeatState.switchState(new MainMenuState());
+				StageData.loadDirectory(PlayState.SONG);
+				LoadingState.loadAndSwitchState(new PlayState());
+				FlxG.sound.music.volume = 0;
 			}
-			else if (controls.ACCEPT) openSelectedSubstate(options[curSelected]);
+			else MusicBeatState.switchState(new MainMenuState());
 		}
+		else if (controls.ACCEPT) openSelectedSubstate(options[curSelected]);
 	}
 	
 	function changeSelection(change:Int = 0)

@@ -8,7 +8,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 	var boyfriend:Character = null;
 	public function new()
 	{
-		title = Language.getPhrase('graphics_menu', 'Graphics Settings');
+		title = 'Graphics Settings';
 		rpcTitle = 'Graphics Settings Menu'; //for Discord Rich Presence
 
 		boyfriend = new Character(840, 170, 'bf', true);
@@ -34,7 +34,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		antialiasingOption = optionsArray.length-1;
 
 		var option:Option = new Option('Shaders', //Name
-			"If unchecked, disables shaders.\nIt's used for some visual effects, and also CPU intensive for weaker " + Main.platform + ".", //Description
+			"If unchecked, disables shaders.\nIt's used for some visual effects, and also CPU intensive for weaker PCs.", //Description
 			'shaders',
 			BOOL);
 		addOption(option);

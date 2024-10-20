@@ -7,21 +7,19 @@ import objects.Alphabet;
 
 class VisualsSettingsSubState extends BaseOptionsMenu
 {
-	public static var pauseMusics:Array<String> = ['None', 'Tea Time', 'Breakfast', 'Breakfast (Pico)'];
 	var noteOptionID:Int = -1;
 	var notes:FlxTypedGroup<StrumNote>;
 	var splashes:FlxTypedGroup<NoteSplash>;
 	var noteY:Float = 90;
 	public function new()
 	{
-		title = Language.getPhrase('visuals_menu', 'Visuals Settings');
+		title = Language.getTextFromID('visuals_menu');
 		rpcTitle = 'Visuals Settings Menu'; //for Discord Rich Presence
 
 		// for note skins and splash skins
 		notes = new FlxTypedGroup<StrumNote>();
 		splashes = new FlxTypedGroup<NoteSplash>();
-		for (i in 0...Note.colArray.length)
-		{
+		for (i in 0...Note.colArray.length) {
 			var note:StrumNote = new StrumNote(370 + (560 / Note.colArray.length) * i, -200, i, 0);
 			note.centerOffsets();
 			note.centerOrigin();
@@ -45,15 +43,15 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var noteSkins:Array<String> = Mods.mergeAllTextsNamed('images/noteSkins/list.txt');
 		if(noteSkins.length > 0)
 		{
-			if(!noteSkins.contains(ClientPrefs.data.noteSkin))
+			if(!noteSkins.contains(Arrays.noteSkinList[ClientPrefs.data.noteSkin]))
 				ClientPrefs.data.noteSkin = ClientPrefs.defaultData.noteSkin; //Reset to default if saved noteskin couldnt be found
 
-			noteSkins.insert(0, ClientPrefs.defaultData.noteSkin); //Default skin always comes first
+			// noteSkins.insert(0, ClientPrefs.defaultData.noteSkin); //Default skin always comes first
 			var option:Option = new Option('Note Skins:',
 				"Select your prefered Note skin.",
 				'noteSkin',
 				STRING,
-				noteSkins);
+				Arrays.noteSkinList);
 			addOption(option);
 			option.onChange = onChangeNoteSkin;
 			noteOptionID = optionsArray.length - 1;
@@ -62,17 +60,16 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var noteSplashes:Array<String> = Mods.mergeAllTextsNamed('images/noteSplashes/list.txt');
 		if(noteSplashes.length > 0)
 		{
-			if(!noteSplashes.contains(ClientPrefs.data.splashSkin))
+			if(!noteSplashes.contains(Arrays.noteSplashList[ClientPrefs.data.splashSkin]))
 				ClientPrefs.data.splashSkin = ClientPrefs.defaultData.splashSkin; //Reset to default if saved splashskin couldnt be found
 
-			noteSplashes.insert(0, ClientPrefs.defaultData.splashSkin); //Default skin always comes first
+			// noteSplashes.insert(0, ClientPrefs.defaultData.splashSkin); //Default skin always comes first
 			var option:Option = new Option('Note Splashes:',
 				"Select your prefered Note Splash variation or turn it off.",
 				'splashSkin',
 				STRING,
-				noteSplashes);
+				Arrays.noteSplashList);
 			addOption(option);
-			option.onChange = onChangeSplashSkin;
 		}
 
 		var option:Option = new Option('Note Splash Opacity',
@@ -97,7 +94,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			"What should the Time Bar display?",
 			'timeBarType',
 			STRING,
-			['Time Left', 'Time Elapsed', 'Song Name', 'Disabled']);
+			Arrays.timeBarList);
 		addOption(option);
 
 		var option:Option = new Option('Flashing Lights',
@@ -129,27 +126,20 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		option.decimals = 1;
 		addOption(option);
 		
+		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',
 			'showFPS',
 			BOOL);
 		addOption(option);
 		option.onChange = onChangeFPSCounter;
-
-		#if sys
-		var option:Option = new Option('VSync',
-			'If checked, Enables VSync fixing any screen tearing at the cost of capping the FPS to screen refresh rate.\n(Must restart the game to have an effect)',
-			'vsync',
-			BOOL);
-		option.onChange = onChangeVSync;
-		addOption(option);
 		#end
 		
 		var option:Option = new Option('Pause Music:',
 			"What song do you prefer for the Pause Screen?",
 			'pauseMusic',
 			STRING,
-			pauseMusics);
+			Arrays.pauseSongList);
 		addOption(option);
 		option.onChange = onChangePauseMusic;
 		
@@ -184,14 +174,11 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	override function changeSelection(change:Int = 0)
 	{
 		super.changeSelection(change);
-		
-		switch(curOption.variable)
-		{
+
+		switch(curOption.variable) {
 			case 'noteSkin', 'splashSkin', 'splashAlpha':
-				if(!notesShown)
-				{
-					for (note in notes.members)
-					{
+				if(!notesShown) {
+					for (note in notes.members) {
 						FlxTween.cancelTweensOf(note);
 						FlxTween.tween(note, {y: noteY}, Math.abs(note.y / (200 + noteY)) / 3, {ease: FlxEase.quadInOut});
 					}
@@ -200,10 +187,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 				if(curOption.variable.startsWith('splash') && Math.abs(notes.members[0].y - noteY) < 25) playNoteSplashes();
 
 			default:
-				if(notesShown) 
-				{
-					for (note in notes.members)
-					{
+				if(notesShown) {
+					for (note in notes.members) {
 						FlxTween.cancelTweensOf(note);
 						FlxTween.tween(note, {y: -200}, Math.abs(note.y / (200 + noteY)) / 3, {ease: FlxEase.quadInOut});
 					}
@@ -213,18 +198,16 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	}
 
 	var changedMusic:Bool = false;
-	function onChangePauseMusic()
-	{
-		if(ClientPrefs.data.pauseMusic == 'None')
+	function onChangePauseMusic() {
+		if(Arrays.pauseSongList[ClientPrefs.data.pauseMusic] == 'None')
 			FlxG.sound.music.volume = 0;
 		else
-			FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(ClientPrefs.data.pauseMusic)));
+			FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(Arrays.pauseSongList[ClientPrefs.data.pauseMusic])));
 
 		changedMusic = true;
 	}
 
-	function onChangeNoteSkin()
-	{
+	function onChangeNoteSkin() {
 		notes.forEachAlive(function(note:StrumNote) {
 			changeNoteSkin(note);
 			note.centerOffsets();
@@ -232,8 +215,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		});
 	}
 
-	function changeNoteSkin(note:StrumNote)
-	{
+	function changeNoteSkin(note:StrumNote) {
 		var skin:String = Note.defaultNoteSkin;
 		var customSkin:String = skin + Note.getNoteSkinPostfix();
 		if(Paths.fileExists('images/$customSkin.png', IMAGE)) skin = customSkin;
@@ -251,10 +233,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		playNoteSplashes();
 	}
 
-	function playNoteSplashes()
-	{
-		for (splash in splashes)
-		{
+	public function playNoteSplashes() {
+		for (splash in splashes) {
 			var anim:String = splash.playDefaultAnim();
 			splash.visible = true;
 			splash.alpha = ClientPrefs.data.splashAlpha;
@@ -262,11 +242,9 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			var conf = splash.config.animations.get(anim);
 			var offsets:Array<Float> = [0, 0];
 
-			if (conf != null)
-				offsets = conf.offsets;
+			if (conf != null) offsets = conf.offsets;
 
-			if (offsets != null)
-			{
+			if (offsets != null) {
 				splash.centerOffsets();
 				splash.offset.set(offsets[0], offsets[1]);
 			}
@@ -279,19 +257,11 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		super.destroy();
 	}
 
+	#if !mobile
 	function onChangeFPSCounter()
 	{
 		if(Main.fpsVar != null)
 			Main.fpsVar.visible = ClientPrefs.data.showFPS;
-	}
-
-	#if sys
-	function onChangeVSync()
-	{
-		var file:String = StorageUtil.rootDir + "vsync.txt";
-		if(FileSystem.exists(file))
-			FileSystem.deleteFile(file);
-		File.saveContent(file, Std.string(ClientPrefs.data.vsync));
 	}
 	#end
 }

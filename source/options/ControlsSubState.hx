@@ -41,9 +41,7 @@ class ControlsSubState extends MusicBeatSubstate
 		[false],
 		[false, 'DEBUG'],
 		[false, 'Key 1', 'debug_1', 'Debug Key #1'],
-		[false, 'Key 2', 'debug_2', 'Debug Key #2'],
-		[false, 'WINDOW'],
-		[false, 'Fullscreen', 'fullscreen', 'Fullscreen Toggel']
+		[false, 'Key 2', 'debug_2', 'Debug Key #2']
 	];
 	var curOptions:Array<Int>;
 	var curOptionsValid:Array<Int>;
@@ -64,8 +62,6 @@ class ControlsSubState extends MusicBeatSubstate
 	
 	public function new()
 	{
-		controls.isInSubstate = true;
-
 		super();
 
 		#if DISCORD_ALLOWED
@@ -143,8 +139,7 @@ class ControlsSubState extends MusicBeatSubstate
 
 					var str:String = option[1];
 					var keyStr:String = option[2];
-					if(isDefaultKey) str = Language.getPhrase(str);
-					var text:Alphabet = new Alphabet(475, 300, !isDisplayKey ? Language.getPhrase('key_$keyStr', str) : Language.getPhrase('keygroup_$str', str), !isDisplayKey);
+					var text:Alphabet = new Alphabet(475, 300, !isDisplayKey ? Language.getTextFromID('Key_$keyStr') : Language.getTextFromID('KeyGroup_$str'), !isDisplayKey);
 					text.isMenuItem = true;
 					text.changeX = false;
 					text.distancePerItem.y = 60;
@@ -286,8 +281,10 @@ class ControlsSubState extends MusicBeatSubstate
 		{
 			if(FlxG.keys.justPressed.ESCAPE || FlxG.gamepads.anyJustPressed(B))
 			{
-				controls.isInSubstate = false;
-				close();
+				if(Arrays.engineList[ClientPrefs.data.styleEngine] == "MicUp")
+					MusicBeatState.resetState();
+				else
+					close();
 				return;
 			}
 			if(FlxG.keys.justPressed.CONTROL || FlxG.gamepads.anyJustPressed(LEFT_SHOULDER) || FlxG.gamepads.anyJustPressed(RIGHT_SHOULDER)) swapMode();
@@ -309,11 +306,11 @@ class ControlsSubState extends MusicBeatSubstate
 					FlxTween.tween(bindingBlack, {alpha: 0.6}, 0.35, {ease: FlxEase.linear});
 					add(bindingBlack);
 
-					bindingText = new Alphabet(FlxG.width / 2, 160, Language.getPhrase('controls_rebinding', 'Rebinding {1}', [options[curOptions[curSelected]][3]]), false);
+					bindingText = new Alphabet(FlxG.width / 2, 160, Language.getTextFromID('Controls_Rebinding', 'REP', [options[curOptions[curSelected]][3]]), false);
 					bindingText.alignment = CENTERED;
 					add(bindingText);
 					
-					bindingText2 = new Alphabet(FlxG.width / 2, 340, Language.getPhrase('controls_rebinding2', 'Hold ESC to Cancel\nHold Backspace to Delete'), true);
+					bindingText2 = new Alphabet(FlxG.width / 2, 340, Language.getTextFromID('Controls_Rebinding_Desc'), true);
 					bindingText2.alignment = CENTERED;
 					add(bindingText2);
 

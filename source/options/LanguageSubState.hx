@@ -1,7 +1,5 @@
 package options;
 
-import openfl.utils.Assets;
-
 class LanguageSubState extends MusicBeatSubstate
 {
 	#if TRANSLATIONS_ALLOWED
@@ -20,8 +18,8 @@ class LanguageSubState extends MusicBeatSubstate
 		add(bg);
 		add(grpLanguages);
 
-		languages.push(ClientPrefs.defaultData.language); //English (US)
-		displayLanguages.set(ClientPrefs.defaultData.language, Language.defaultLangName);
+		languages.push(Language.list[ClientPrefs.defaultData.language]); //English (US)
+		displayLanguages.set(Language.list[ClientPrefs.defaultData.language], Language.DEFAULT_LANGUAGE);
 		var directories:Array<String> = Mods.directoriesWithFile(Paths.getSharedPath(), 'data/');
 		for (directory in directories)
 		{
@@ -64,12 +62,12 @@ class LanguageSubState extends MusicBeatSubstate
 		});
 
 		//trace(ClientPrefs.data.language);
-		curSelected = languages.indexOf(ClientPrefs.data.language);
+		curSelected = languages.indexOf(Language.list[ClientPrefs.data.language]);
 		if(curSelected < 0)
 		{
 			//trace('Language not found: ' + ClientPrefs.data.language);
 			ClientPrefs.data.language = ClientPrefs.defaultData.language;
-			curSelected = Std.int(Math.max(0, languages.indexOf(ClientPrefs.data.language)));
+			curSelected = Std.int(Math.max(0, languages.indexOf(Language.list[ClientPrefs.data.language])));
 		}
 
 		for (num => lang in languages)
@@ -92,8 +90,6 @@ class LanguageSubState extends MusicBeatSubstate
 			grpLanguages.add(text);
 		}
 		changeSelected();
-
-        addTouchPad('LEFT_FULL', 'A_B');
 	}
 
 	var changedLanguage:Bool = false;
@@ -124,10 +120,10 @@ class LanguageSubState extends MusicBeatSubstate
 		if(controls.ACCEPT)
 		{
 			FlxG.sound.play(Paths.sound('confirmMenu'), 0.6);
-			ClientPrefs.data.language = languages[curSelected];
+			ClientPrefs.data.language = curSelected;
 			//trace(ClientPrefs.data.language);
 			ClientPrefs.saveSettings();
-			Language.reloadPhrases();
+			Language.loadLangSetting();
 			changedLanguage = true;
 		}
 	}

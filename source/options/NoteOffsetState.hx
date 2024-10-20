@@ -115,7 +115,7 @@ class NoteOffsetState extends MusicBeatState
 		repositionCombo();
 
 		// Note delay stuff
-		beatText = new Alphabet(0, 0, Language.getPhrase('delay_beat_hit', 'Beat Hit!'), true);
+		beatText = new Alphabet(0, 0, Language.getTextFromID('Offset_Beat_Hit'), true);
 		beatText.setScale(0.6, 0.6);
 		beatText.x += 260;
 		beatText.alpha = 0;
@@ -177,8 +177,8 @@ class NoteOffsetState extends MusicBeatState
 	var onComboMenu:Bool = true;
 	var holdingObjectType:Null<Bool> = null;
 
-	var startMousePos:FlxPoint = FlxPoint.get();
-	var startComboOffset:FlxPoint = FlxPoint.get();
+	var startMousePos:FlxPoint = new FlxPoint();
+	var startComboOffset:FlxPoint = new FlxPoint();
 
 	override public function update(elapsed:Float)
 	{
@@ -346,7 +346,7 @@ class NoteOffsetState extends MusicBeatState
 				}
 			}
 
-			if(controls.RESET || touchPad.buttonC.justPressed)
+			if(controls.RESET)
 			{
 				for (i in 0...ClientPrefs.data.comboOffset.length)
 				{
@@ -384,7 +384,7 @@ class NoteOffsetState extends MusicBeatState
 				updateNoteDelay();
 			}
 
-			if(controls.RESET || touchPad.buttonC.justPressed)
+			if(controls.RESET)
 			{
 				holdTime = 0;
 				barPercent = 0;
@@ -405,16 +405,25 @@ class NoteOffsetState extends MusicBeatState
 			if(beatTween != null) beatTween.cancel();
 
 			persistentUpdate = false;
-			MusicBeatState.switchState(new options.OptionsState());
+			switch(Arrays.engineList[ClientPrefs.data.styleEngine]) {
+				case "Psych Old" | "Psych New":
+					MusicBeatState.switchState(new options.OptionsState());
+				case "Kade":
+					MusicBeatState.switchState(new options.kade.KadeOptions());
+				case "MicUp":
+					MusicBeatState.switchState(new options.micup.SettingsState());
+				case "Vanilla":
+					MusicBeatState.switchState(new options.vanilla.VanillaSettingState());
+			}
+
 			if(OptionsState.onPlayState)
 			{
-				if(ClientPrefs.data.pauseMusic != 'None')
-					FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(ClientPrefs.data.pauseMusic)));
+				if(Arrays.pauseSongList[ClientPrefs.data.pauseMusic] != 'None')
+					FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(Arrays.pauseSongList[ClientPrefs.data.pauseMusic])));
 				else
 					FlxG.sound.music.volume = 0;
 			}
 			else FlxG.sound.playMusic(Paths.music('freakyMenu'));
-			FlxG.mouse.visible = false;
 		}
 
 		Conductor.songPosition = FlxG.sound.music.time;
@@ -499,9 +508,9 @@ class NoteOffsetState extends MusicBeatState
 		{
 			switch(i)
 			{
-				case 0: dumbTexts.members[i].text = Language.getPhrase('combo_rating_offset', 'Rating Offset:');
+				case 0: dumbTexts.members[i].text = Language.getTextFromID('Offset_RO');
 				case 1: dumbTexts.members[i].text = '[' + ClientPrefs.data.comboOffset[0] + ', ' + ClientPrefs.data.comboOffset[1] + ']';
-				case 2: dumbTexts.members[i].text = Language.getPhrase('combo_numbers_offset', 'Numbers Offset:');
+				case 2: dumbTexts.members[i].text = Language.getTextFromID('Offset_NO');
 				case 3: dumbTexts.members[i].text = '[' + ClientPrefs.data.comboOffset[2] + ', ' + ClientPrefs.data.comboOffset[3] + ']';
 			}
 		}
@@ -510,7 +519,7 @@ class NoteOffsetState extends MusicBeatState
 	function updateNoteDelay()
 	{
 		ClientPrefs.data.noteOffset = Math.round(barPercent);
-		timeTxt.text = Language.getPhrase('delay_current_offset', 'Current offset: {1} ms', [Math.floor(barPercent)]);
+		timeTxt.text = Language.getTextFromID('Offset_CO', 'REP', [Math.floor(barPercent)]);
 	}
 
 	function updateMode()
@@ -531,34 +540,18 @@ class NoteOffsetState extends MusicBeatState
 			controllerPointer.visible = controls.controllerMode;
 		}
 
-		removeTouchPad();
-
 		var str:String;
 		var str2:String;
 		if(onComboMenu)
-		{
-			str = Language.getPhrase('combo_offset', 'Combo Offset');
-			addTouchPad('NONE', 'A_B_C');
-			addTouchPadCamera();
-		} else {
-			str = Language.getPhrase('note_delay', 'Note/Beat Delay');
-			addTouchPad('LEFT_FULL', 'A_B_C');
-			addTouchPadCamera();
-		}
-
-		if(controls.mobileC)
-			str2 = '(Press A to Switch)';
-		else if(!controls.controllerMode)
-			str2 = Language.getPhrase('switch_on_accept', '(Press Accept to Switch)');
+			str = Language.getTextFromID('Offset_Combo');
 		else
-			str2 = Language.getPhrase('switch_on_start', '(Press Start to Switch)');
+			str = Language.getTextFromID('Offset_NBD');
+
+		if(!controls.controllerMode)
+			str2 = Language.getTextFromID('Offset_Switch', 'R_S', 0, [controls.ACCEPT_S]);
+		else
+			str2 = Language.getTextFromID('Offset_Switch', 'SPT', 1);
 
 		changeModeText.text = '< ${str.toUpperCase()} ${str2.toUpperCase()} >';
-	}
-
-	override function destroy(){
-		startMousePos.put();
-		startComboOffset.put();
-		super.destroy();
 	}
 }
