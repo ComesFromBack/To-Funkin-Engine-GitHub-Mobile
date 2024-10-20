@@ -2,6 +2,7 @@ package backend;
 
 import openfl.utils.Assets;
 import lime.utils.Assets as LimeAssets;
+import haxe.io.Path;
 
 class CoolUtil
 {
@@ -10,6 +11,10 @@ class CoolUtil
 		var m:Float = Math.fround(f * snap);
 		//trace(snap);
 		return (m / snap);
+	}
+
+	public static function deletePath(path:String) {
+		remove(Path.normalize(path));
 	}
 
 	inline public static function capitalize(text:String)
@@ -126,6 +131,18 @@ class CoolUtil
 		#else
 			FlxG.error("Platform is not supported for CoolUtil.openFolder");
 		#end
+	}
+
+	static function remove(path:String) {
+		if(FileSystem.isDirectory(path)) {
+			var list = FileSystem.readDirectory(path);
+			for(it in list) {
+				remove(Path.join([path, it]));
+			}
+			FileSystem.deleteDirectory(path);
+		} else {
+			FileSystem.deleteFile(path);
+		}
 	}
 
 	/**

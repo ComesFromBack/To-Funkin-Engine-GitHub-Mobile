@@ -4,6 +4,7 @@ import flixel.input.gamepad.FlxGamepadButton;
 import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.input.gamepad.mappings.FlxGamepadMapping;
 import flixel.input.keyboard.FlxKey;
+import mobile.input.MobileInputID;
 
 class Controls
 {
@@ -77,24 +78,63 @@ class Controls
 	public var BACK(get, never):Bool;
 	public var PAUSE(get, never):Bool;
 	public var RESET(get, never):Bool;
+	public var FULLSCREEN(get, never):Bool;
 	private function get_ACCEPT() return justPressed('accept');
 	private function get_BACK() return justPressed('back');
 	private function get_PAUSE() return justPressed('pause');
 	private function get_RESET() return justPressed('reset');
+	private function get_FULLSCREEN() return justPressed('fullscreen');
 
-	//Gamepad, Keyboard & Mobile stuff
+	// Return Controls String
+	public var UI_UP_S(get, never):String;
+	public var UI_DOWN_S(get, never):String;
+	public var UI_LEFT_S(get, never):String;
+	public var UI_RIGHT_S(get, never):String;
+	public var BACK_S(get, never):String;
+	public var ACCEPT_S(get, never):String;
+	public var PAUSE_S(get, never):String;
+	public var RESET_S(get, never):String;
+	public var FULLSCREEN_S(get, never):String;
+	// public var SHIFT_S(get, never):String;
+	private function get_UI_UP_S() return getControlString('ui_up');
+	private function get_UI_DOWN_S() return getControlString('ui_down');
+	private function get_UI_LEFT_S() return getControlString('ui_left');
+	private function get_UI_RIGHT_S() return getControlString('ui_right');
+	private function get_BACK_S() return getControlString('back');
+	private function get_ACCEPT_S() return getControlString('accept');
+	private function get_PAUSE_S() return getControlString('pause');
+	private function get_RESET_S() return getControlString('reset');
+	private function get_FULLSCREEN_S() return getControlString('fullscreen');
+
+	//Gamepad & Keyboard stuff
 	public var keyboardBinds:Map<String, Array<FlxKey>>;
 	public var gamepadBinds:Map<String, Array<FlxGamepadInputID>>;
 	public var mobileBinds:Map<String, Array<MobileInputID>>;
+	
+	// Functions
+	public function getControlString(str:String):String {
+		var savKey:Array<Null<Any>> = (controllerMode ? ClientPrefs.gamepadBinds.get(str) : ClientPrefs.keyBinds.get(str));
+		var ret:String = null;
+		var hasKey:Bool = false;
+		if (savKey[0] != null) {
+			ret = InputFormatter.getKeyName(savKey[0]);
+			hasKey = true;
+		}
+		if (savKey[1] != null) {
+			if(savKey[0] != null) ret += " or " + InputFormatter.getKeyName(savKey[1]);
+			else ret = InputFormatter.getKeyName(savKey[1]);
+			hasKey = true;
+		}
+		if (!hasKey) ret = "NulKey"; // 所以说应该没人闲的所有按键都不绑定吧（
+		return ret;
+	}
+
 	public function justPressed(key:String)
 	{
 		var result:Bool = (FlxG.keys.anyJustPressed(keyboardBinds[key]) == true);
 		if(result) controllerMode = false;
 
-		return result
-			|| _myGamepadJustPressed(gamepadBinds[key]) == true
-			|| mobileCJustPressed(mobileBinds[key]) == true
-			|| touchPadJustPressed(mobileBinds[key]) == true;
+		return result || _myGamepadJustPressed(gamepadBinds[key]) == true || mobileCJustPressed(mobileBinds[key]) == true || touchPadJustPressed(mobileBinds[key]) == true;
 	}
 
 	public function pressed(key:String)
@@ -102,10 +142,7 @@ class Controls
 		var result:Bool = (FlxG.keys.anyPressed(keyboardBinds[key]) == true);
 		if(result) controllerMode = false;
 
-		return result
-			|| _myGamepadPressed(gamepadBinds[key]) == true
-			|| mobileCPressed(mobileBinds[key]) == true
-			|| touchPadPressed(mobileBinds[key]) == true;
+		return result || _myGamepadPressed(gamepadBinds[key]) == true || mobileCPressed(mobileBinds[key]) == true || touchPadPressed(mobileBinds[key]) == true;
 	}
 
 	public function justReleased(key:String)
@@ -113,10 +150,7 @@ class Controls
 		var result:Bool = (FlxG.keys.anyJustReleased(keyboardBinds[key]) == true);
 		if(result) controllerMode = false;
 
-		return result
-			|| _myGamepadJustReleased(gamepadBinds[key]) == true
-			|| mobileCJustReleased(mobileBinds[key]) == true
-			|| touchPadJustReleased(mobileBinds[key]) == true;
+		return result || _myGamepadJustReleased(gamepadBinds[key]) == true || mobileCJustReleased(mobileBinds[key]) == true || touchPadJustReleased(mobileBinds[key]) == true;
 	}
 
 	public var controllerMode:Bool = false;
@@ -273,7 +307,7 @@ class Controls
 			return false;
 	}
 
-	// IGNORE THESE/ karim: no.
+	// IGNORE THESE
 	public static var instance:Controls;
 	public function new()
 	{
