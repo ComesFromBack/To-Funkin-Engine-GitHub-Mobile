@@ -3,7 +3,7 @@ package objects;
 #if ACHIEVEMENTS_ALLOWED
 import openfl.events.Event;
 import openfl.geom.Matrix;
-import openfl.display.BitmapData;
+import flash.display.BitmapData;
 import openfl.Lib;
 
 class AchievementPopup extends openfl.display.Sprite {
@@ -58,8 +58,8 @@ class AchievementPopup extends openfl.display.Sprite {
 		var desc:String = 'Description not found';
 		if(achievement != null)
 		{
-			if(achievement.name != null) name = Language.getPhrase('achievement_$achieve', achievement.name);
-			if(achievement.description != null)  desc = Language.getPhrase('description_$achieve', achievement.description);
+			if(achievement.name != null) name = Language.getTextFromID('Achievement_$achieve', "SPT", 0);
+			if(achievement.description != null)  desc = Language.getTextFromID('Achievement_$achieve', "SPT", 1);
 		}
 
 		var textX = sizeX + imgX + 15;

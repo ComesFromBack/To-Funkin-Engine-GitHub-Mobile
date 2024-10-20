@@ -42,7 +42,7 @@ class CopyState extends MusicBeatState
 			return;
 		}
 
-		#if android
+		#if (!ios || !iphoneos || !iphonesim)
 		CoolUtil.showPopUp("Seems like you have some missing files that are necessary to run the game\nPress OK to begin the copy process", "Notice!");
 		#end
 
@@ -83,7 +83,7 @@ class CopyState extends MusicBeatState
 			{
 				if (failedFiles.length > 0)
 				{
-					#if android
+					#if (!ios || !iphoneos || !iphonesim)
 					CoolUtil.showPopUp(failedFiles.join('\n'), 'Failed To Copy ${failedFiles.length} File.');
 					#end
 					if (!FileSystem.exists('logs'))
@@ -159,7 +159,7 @@ class CopyState extends MusicBeatState
 
 	public function getFileBytes(file:String):ByteArray
 	{
-		switch (Path.extension(file).toLowerCase())
+		switch (Path.extension(file))
 		{
 			case 'otf' | 'ttf':
 				return ByteArray.fromFile(file);

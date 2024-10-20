@@ -92,9 +92,9 @@ class MusicPlayer extends FlxGroup
 
 		var songName:String = instance.songs[FreeplayState.curSelected].songName;
 		if (playing && !wasPlaying)
-			songTxt.text = Language.getPhrase('musicplayer_playing', 'PLAYING: {1}', [songName]);
+			songTxt.text = Language.getTextFromID('Freeplayer_Playing', 'REP', [songName]);
 		else
-			songTxt.text = Language.getPhrase('musicplayer_paused', 'PLAYING: {1} (PAUSED)', [songName]);
+			songTxt.text = '${Language.getTextFromID('Freeplayer_Playing', 'REP', [songName])} ${Language.getTextFromID('Freeplayer_Paused')}';
 
 		//if(FlxG.keys.justPressed.K) trace('Time: ${FreeplayState.vocals.time}, Playing: ${FreeplayState.vocals.playing}');
 
@@ -180,7 +180,7 @@ class MusicPlayer extends FlxGroup
 			}
 		}
 	
-		if (instance.touchPad.buttonC.justPressed || controls.RESET)
+		if (controls.RESET)
 		{
 			playbackRate = 1;
 			setPlaybackRate();
@@ -259,7 +259,7 @@ class MusicPlayer extends FlxGroup
 
 		if (playingMusic)
 		{
-			instance.bottomText.text = Language.getPhrase('musicplayer_tip', (instance.controls.mobileC) ? 'Press X to Pause / Press B to Exit / Press C to Reset the Song' : 'Press SPACE to Pause / Press ESCAPE to Exit / Press R to Reset the Song');
+			instance.bottomText.text = '${Language.getTextFromID("Freeplayer_Space_Playing")}${Language.getTextFromID("Freeplayer_Spilter")}${Language.getTextFromID("Freeplayer_Exit","REP",[controls.BACK_S])}${Language.getTextFromID("Freeplayer_Spilter")}${Language.getTextFromID("Freeplayer_Reset_Playing","REP",[controls.RESET_S])}';
 			positionSong();
 			
 			progressBar.setRange(0, FlxG.sound.music.length);
@@ -270,6 +270,7 @@ class MusicPlayer extends FlxGroup
 		}
 		else
 		{
+			instance.bottomText.text = '${Language.getTextFromID("Freeplayer_Space_Pause")}${Language.getTextFromID("Freeplayer_Spilter")}${Language.getTextFromID("Freeplayer_Exit","REP",[controls.BACK_S])}${Language.getTextFromID("Freeplayer_Spilter")}${Language.getTextFromID("Freeplayer_Reset_Pause","REP",[controls.RESET_S])}';
 			progressBar.setRange(0, Math.POSITIVE_INFINITY);
 			progressBar.setParent(null, "");
 			progressBar.numDivisions = 0;

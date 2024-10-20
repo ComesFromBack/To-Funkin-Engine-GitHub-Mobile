@@ -136,8 +136,8 @@ class Note extends FlxSprite
 	public var hitsoundForce:Bool = false;
 	public var hitsoundVolume(get, default):Float = 1.0;
 	function get_hitsoundVolume():Float {
-		if(ClientPrefs.data.hitsoundVolume > 0)
-			return ClientPrefs.data.hitsoundVolume;
+		if(ClientPrefs.data.hitSoundVolume > 0)
+			return ClientPrefs.data.hitSoundVolume;
 		return hitsoundForce ? hitsoundVolume : 0.0;
 	}
 	public var hitsound:String = 'hitsound';
@@ -419,8 +419,8 @@ class Note extends FlxSprite
 	public static function getNoteSkinPostfix()
 	{
 		var skin:String = '';
-		if(ClientPrefs.data.noteSkin != ClientPrefs.defaultData.noteSkin)
-			skin = '-' + ClientPrefs.data.noteSkin.trim().toLowerCase().replace(' ', '_');
+		if(Arrays.noteSkinList[ClientPrefs.data.noteSkin] != Arrays.noteSkinList[ClientPrefs.defaultData.noteSkin])
+			skin = '-' + Arrays.noteSkinList[ClientPrefs.data.noteSkin].trim().toLowerCase().replace(' ', '_');
 		return skin;
 	}
 

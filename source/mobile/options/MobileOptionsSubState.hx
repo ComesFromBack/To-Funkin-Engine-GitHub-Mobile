@@ -13,7 +13,7 @@ class MobileOptionsSubState extends BaseOptionsMenu
 	final lastStorageType:String = ClientPrefs.data.storageType;
 	#end
 	final exControlTypes:Array<String> = ["NONE", "SINGLE", "DOUBLE"];
-	final hintOptions:Array<String> = ["No Gradient", "No Gradient (Old)", "Gradient", "Hidden"];
+	final hintOptions:Array<String> = ["Gradient", "No Gradient", "Hidden"];
 	var option:Option;
 
 	public function new()
@@ -23,12 +23,12 @@ class MobileOptionsSubState extends BaseOptionsMenu
 		title = 'Mobile Options';
 		rpcTitle = 'Mobile Options Menu'; // for Discord Rich Presence, fuck it
 
-		option = new Option('Extra Controls', 'Select how many extra buttons you prefer to have?\nThey can be used for mechanics with LUA or HScript.',
+		option = new Option('Extra Controls', 'Select how many extra buttons you prefere to have\nThey can be used for mechanics with LUA or HScript.',
 			'extraButtons', STRING, exControlTypes);
 		addOption(option);
 
 		option = new Option('Mobile Controls Opacity',
-			'Selects the opacity for the mobile buttons (careful not to put it at 0 and lose track of your buttons).', 'controlsAlpha', PERCENT);
+			'Selects the opacity for the mobile buttons (carefull not to put it at 0 and loose track of your buttons).', 'controlsAlpha', PERCENT);
 		option.scrollSpeed = 1;
 		option.minValue = 0.001;
 		option.maxValue = 1;

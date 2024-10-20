@@ -47,7 +47,7 @@ enum abstract MobileInputID(Int) from Int to Int
 	var X = 27;
 	var Y = 28;
 	var Z = 29;
-	// Touch Pad Directional Buttons
+	// Touch Pad Directional Buttons Buttons
 	var UP = 30;
 	var UP2 = 31;
 	var DOWN = 32;
@@ -56,7 +56,7 @@ enum abstract MobileInputID(Int) from Int to Int
 	var LEFT2 = 35;
 	var RIGHT = 36;
 	var RIGHT2 = 37;
-	// Hitbox Hints
+	// Hitbox Buttons
 	var HITBOX_UP = 38;
 	var HITBOX_DOWN = 39;
 	var HITBOX_LEFT = 40;

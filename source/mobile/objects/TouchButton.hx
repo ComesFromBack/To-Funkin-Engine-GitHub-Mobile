@@ -7,6 +7,7 @@ import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 #if mac
 import flixel.input.mouse.FlxMouseButton;
 #end
+import mobile.input.MobileInputID;
 
 /**
  * A simple button class that calls a function when clicked by the touch.
@@ -170,8 +171,6 @@ class TypedTouchButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 	 * The input currently pressing this button, if none, it's `null`. Needed to check for its release.
 	 */
 	var currentInput:IFlxInput;
-
-	public var canChangeLabelAlpha:Bool = true;
 
 	/**
 	 * Creates a new `FlxTypedButton` object with a gray background.
@@ -432,7 +431,7 @@ class TypedTouchButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 	override function set_alpha(Value:Float):Float
 	{
 		super.set_alpha(Value);
-		if (_spriteLabel != null && canChangeLabelAlpha)
+		if (_spriteLabel != null)
 			_spriteLabel.alpha = alpha == 0 ? 0 : alpha + labelStatusDiff;
 		return Value;
 	}
